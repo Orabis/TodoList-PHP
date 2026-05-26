@@ -11,10 +11,8 @@ try {
     print "Error!: " . $e->getMessage() . "<br/>";
     die();
 }
+// TODO Refacto to a function for use in html
 $sql = "SELECT * FROM priorites";
-foreach ($pdo->query($sql) as $row) {
-    print $row['nom_priorite'];
-}
 ?>
 
 <!DOCTYPE html>
@@ -34,6 +32,13 @@ foreach ($pdo->query($sql) as $row) {
     <div>
         <form method="POST" action="">
             <h2>Crée une nouvelle tâche</h2>
+            <label for="priorites"> Niveau de Priorité :</label>
+            <select name="priorites" id="priorites">
+                <option value="">--Choisir une priorité--</option>
+                <?php foreach ($pdo->query($sql) as $row) {
+                    print '<option value="' . $row['nom_priorite'] . '">' . $row['nom_priorite'] . '</option>';
+                } ?>
+            </select>
         </form>
     </div>
 </main>
