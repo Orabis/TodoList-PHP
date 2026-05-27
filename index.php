@@ -11,10 +11,21 @@ try {
     print "Error!: " . $e->getMessage() . "<br/>";
     die();
 }
-// TODO Refacto to a function for use in html
-$sql = "SELECT * FROM priorites";
-?>
+function query_options($pdo, $table, $valueColumn, $is_tags = false)
+{
+    $sql = "SELECT * FROM $table";
+    foreach ($pdo->query($sql) as $row) {
+        if ($is_tags) {
+            print '<label>';
+            print '<input type="checkbox" name="tags[]" value="' . $row[$valueColumn] . '"> ' . $row[$valueColumn];
+            print '</label><br>';
+        } else {
+            print '<option value="' . $row[$valueColumn] . '">' . $row[$valueColumn] . '</option>';
+        }
+    }
+}
 
+?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -32,18 +43,52 @@ $sql = "SELECT * FROM priorites";
     <div>
         <form method="POST" action="">
             <h2>Crée une nouvelle tâche</h2>
-            <label for="priorites"> Niveau de Priorité :</label>
-            <select name="priorites" id="priorites">
-                <option value="">--Choisir une priorité--</option>
-                <?php foreach ($pdo->query($sql) as $row) {
-                    print '<option value="' . $row['nom_priorite'] . '">' . $row['nom_priorite'] . '</option>';
-                } ?>
-            </select>
+            <label>
+                Titre de la tâche
+                <input name="title" id="title" type="text">
+            </label>
+            <label>
+                Description
+                <input name="description" id="descr" type="text">
+            </label>
+            <label>
+                Niveau de Priorité :
+                <select name="priorites" id="priorites">
+                    <option value="">--Choisir une Priorité--</option>
+                    <?php query_options($pdo, "priorites", "nom_priorite"); ?>
+                </select>
+            </label>
+            <label>
+                Contexte :
+                <select name="contexte" id="contexte">
+                    <option value="">--Choisir un Contexte</option>
+                    <?php query_options($pdo, "contextes", "nom_contexte"); ?>
+                </select>
+            </label>
+            <label>
+                Type :
+                <select name="type" id="type">
+                    <option value="">--Choisir un Type--</option>
+                    <?php query_options($pdo, "type_tache", "nom_type"); ?>
+                </select>
+            </label>
+            <label>
+                Statut :
+                <select name="status" id="status">
+                    <option value="">--Choisir un Status</option>
+                    <?php query_options($pdo, "status", "libelle"); ?>
+                </select>
+            </label>
+            <fieldset>
+                <legend>Tags :</legend>
+                <?php query_options($pdo, "tags", "nom_tag", true); ?>
+            </fieldset>
+            <button type="submit">Ajouter</button>
         </form>
     </div>
 </main>
 <footer>
-    Léo Merkel
+    <p>Léo Merkel - 2026</p>
 </footer>
 </body>
 </html>
