@@ -28,33 +28,37 @@ function query_options($pdo, $table, $idColumn, $valueColumn, $is_tags = false){
 }
 
 if (isset($_POST['submit_task'])) {
-    $title       = !empty($_POST['title']) ? $_POST['title'] : null;
-    $description = !empty($_POST['description']) ? $_POST['description'] : null;
+    $title       = !empty($_POST['title']) ? trim($_POST['title']) : null;
+    $description = !empty($_POST['description']) ? trim($_POST['description']) : null;
     $priorites   = !empty($_POST['priorites']) ? (int)$_POST['priorites'] : null;
     $contexte    = !empty($_POST['contexte']) ? (int)$_POST['contexte'] : null;
     $type        = !empty($_POST['type']) ? (int)$_POST['type'] : null;
     $status      = !empty($_POST['status']) ? (int)$_POST['status'] : null;
     $tags        = $_POST['tags'] ?? [];
 
-    $sql = "INSERT INTO tache (titre, description,date_crea, id_priorite, id_contexte,id_type, id_statut) VALUES (?, ?,NOW(),?, ?, ?, ?)";
-    $pdo->prepare($sql)->execute([$title, $description, $priorites, $contexte, $type, $status]);
-    $tache_id = $pdo->lastInsertId();
+    if ($title) {
+        $check_sql = "SELECT COUNT(*) FROM tache WHERE LOWER(titre) = LOWER(?)";
+        $check_stmt = $pdo->prepare($check_sql);
+        $check_stmt->execute([$title]);
+        $task_exists = $check_stmt->fetchColumn();
 
-    $sql_tag = "INSERT INTO tache_tag (id_tache, id_tag) VALUES (?, ?)";
-    $stmt_tag = $pdo->prepare($sql_tag);
-    foreach ($tags as $tag) {
-        $stmt_tag->execute([$tache_id, $tag]);
-    }
-    echo '<p class="alert alert-success">Tâche créée avec succès !</p>';
-}
-elseif (isset($_POST['submit_tag'])) {
-    $name_tag = trim($_POST['create_tag'] ?? '');
-    if (empty($name_tag)) {
-        echo '<p class="alert alert-error">Veuillez renseigner un tag valide.</p>';
+        if ($task_exists > 0) {
+            echo '<p class="alert alert-error">Une tâche avec ce titre existe déjà.</p>';
+        } else {
+            $sql = "INSERT INTO tache (titre, description, date_crea, id_priorite, id_contexte, id_type, id_statut) VALUES (?, ?, NOW(), ?, ?, ?, ?)";
+            $pdo->prepare($sql)->execute([$title, $description, $priorites, $contexte, $type, $status]);
+            $tache_id = $pdo->lastInsertId();
+            if (!empty($tags)) {
+                $sql_tag = "INSERT INTO tache_tag (id_tache, id_tag) VALUES (?, ?)";
+                $stmt_tag = $pdo->prepare($sql_tag);
+                foreach ($tags as $tag) {
+                    $stmt_tag->execute([$tache_id, $tag]);
+                }
+            }
+            echo '<p class="alert alert-success">Tâche créée avec succès !</p>';
+        }
     } else {
-        $sql = "INSERT INTO tags (nom_tag) VALUES (?)";
-        $pdo->prepare($sql)->execute([$name_tag]);
-        echo '<p class="alert alert-success">Tag créé avec succès !</p>';
+        echo '<p class="alert alert-error">Le titre de la tâche est obligatoire.</p>';
     }
 }
 ?>

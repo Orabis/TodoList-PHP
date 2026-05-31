@@ -93,7 +93,7 @@ CREATE DATABASE todolist;
 CREATE TABLE priorites
 (
     id_priorite SERIAL PRIMARY KEY,
-    nom         VARCHAR(50) NOT NULL
+    nom_priorite         VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE contexte
@@ -145,7 +145,7 @@ CREATE TABLE tache_tag
     FOREIGN KEY (id_tag) REFERENCES tags (id_tag)
 );
 
-INSERT INTO priorites (nom)
+INSERT INTO priorites (nom_priorite)
 VALUES ('Faible'), ('Normal'), ('Urgent'), ('Critique');
 
 INSERT INTO contexte (nom_contexte)
